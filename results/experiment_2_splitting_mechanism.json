@@ -1,0 +1,162 @@
+[
+  {
+    "rho": 0.0005,
+    "sigma": 0.0,
+    "regime": "nearly_selfish",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.012500000000002842,
+    "split_gain": 0.012500000000002842,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.0006666666666666666,
+    "regime": "nearly_selfish",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.02916666666666856,
+    "split_gain": 0.02916666666666856,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.0013333333333333333,
+    "regime": "nearly_selfish",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.04583333333333428,
+    "split_gain": 0.04583333333333428,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.002,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.0625,
+    "split_gain": 0.0625,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.0026666666666666666,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.07916666666666572,
+    "split_gain": 0.07916666666666572,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.003333333333333333,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.09583333333333499,
+    "split_gain": 0.09583333333333499,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.004,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.11250000000000071,
+    "split_gain": 0.11250000000000071,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.004666666666666666,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.12916666666666643,
+    "split_gain": 0.12916666666666643,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.005333333333333333,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.14583333333333215,
+    "split_gain": 0.14583333333333215,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.006,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.16250000000000142,
+    "split_gain": 0.16250000000000142,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.006666666666666666,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.17916666666666714,
+    "split_gain": 0.17916666666666714,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.007333333333333333,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.1958333333333364,
+    "split_gain": 0.1958333333333364,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.008,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.21250000000000213,
+    "split_gain": 0.21250000000000213,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.008666666666666666,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.22916666666666785,
+    "split_gain": 0.22916666666666785,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.009333333333333332,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.24583333333333357,
+    "split_gain": 0.24583333333333357,
+    "social_cost_grand": 17.0
+  },
+  {
+    "rho": 0.0005,
+    "sigma": 0.01,
+    "regime": "mixed",
+    "U_grand": -17.0425,
+    "is_split_stable": false,
+    "split_incentive": 0.2624999999999993,
+    "split_gain": 0.2624999999999993,
+    "social_cost_grand": 17.0
+  }
+]

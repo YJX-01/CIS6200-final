@@ -1,0 +1,865 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[backend=biber, style=authoryear]{biblatex}
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+% ----- theorem-like environments -----
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+
+% ----- definition-like environments (not in italics) -----
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{proof}{Proof}
+% ----- remark-like environments (small text, non-italic) -----
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+
+\addbibresource{references.bib}
+\begin{document}
+\title{Coalitional Stability in Congestion Games with Altruism and Spite}
+\author{Junxiang Li, Jiayi Chen, Yujie Xu, Yiqi Qiu}
+\date{November 2025}
+\maketitle
+
+\section{Introduction}
+\subsection{Fundamental Works on Congestion Games}
+ Remark, definition这些要再生成
+Congestion games form a foundational class of strategic interaction models where agents compete over shared, delay-sensitive resources. First introduced by \textcite{rosenthal1973class}, congestion games have become central to algorithmic game theory, network economics, and decentralized optimization. A standard congestion game models situations where each player selects a subset of shared resources, and the cost of each resource depends solely on the number of players choosing it. Rosenthal demonstrated that every finite congestion game admits at least one pure-strategy Nash equilibrium by constructing an exact potential function. This result marked one of the earliest applications of potential-based methods to equilibrium analysis.
+
+Building on Rosenthal's insight, \textcite{monderer1996potential} formalized the notion of potential games, showing that every finite congestion game is an exact potential game. Their framework provided a unified theoretical foundation for numerous decentralized systems where agents’ incentives align with an underlying global function. These developments positioned congestion games as analytically tractable yet behaviorally rich models of strategic interaction.
+
+A parallel line of inquiry has focused on the efficiency of equilibria in such games. \textcite{koutsoupias1999worst} introduced the concept of the Price of Anarchy (PoA)—the ratio between the cost of a worst-case Nash equilibrium and that of a socially optimal outcome. This benchmark enabled quantitative assessments of inefficiency under selfish behavior. In a seminal contribution, \textcite{roughgarden2002how} analyzed the PoA in nonatomic routing games with affine latency functions and established a tight bound of $4/3$. Their work not only provided explicit inefficiency guarantees but also introduced the smoothness framework that now underpins much of the performance analysis in algorithmic game theory.
+
+These foundational contributions collectively defined the standard tools and benchmarks for analyzing strategic resource allocation. However, real-world applications often involve heterogeneous preferences, cooperation, and social context—elements not captured by purely selfish models. Consequently, a growing body of research seeks to extend the classical framework to incorporate social preferences (e.g., altruism, spite), coalition formation, and bounded rationality. Understanding the interplay between strategic behavior and social structure in these extended models remains a central challenge in the theory of network games.
+
+
+\subsection{Congestion Games with Social Preferences: Altruism and Spite}
+
+Classical congestion games model purely selfish agents who seek to minimize their own delays. However, many real-world systems involve \emph{social preferences}, where agents may also care about the impact of their actions on others. This behavior is commonly modeled via a weighted combination of individual and external delays:
+\[
+\mathrm{Perceived\ Cost} = (1 - \alpha) \cdot \mathrm{own\ delay} + \alpha \cdot \mathrm{others'\ delay}
+\]
+Here, $\alpha > 0$ captures \emph{altruism}, while $\alpha < 0$ represents \emph{spite} or \emph{hostility}—a desire to increase others’ costs.
+
+\textcite{chen2008altruism} first introduced this formulation in traffic routing and derived tight bounds for the Price of Anarchy (PoA). In networks with convex latency functions, they showed that if all agents share altruism level $\beta > 0$, then
+\[
+\mathrm{PoA} \leq \frac{1}{\beta}, \quad \mathrm{and\ in\ linear\ networks,\ } \mathrm{PoA} \leq \frac{4}{3 + 2\beta - \beta^2}
+\]
+
+This bound remains valid even for $\beta < 0$, meaning that spiteful preferences also admit a symmetric analysis, though often with degraded efficiency.
+
+\textcite{caragiannis2010altruism} extended the model to atomic congestion games with uniform altruism, proving that in linear latency settings, PoA increases with $\alpha$:
+\[
+\text{PoA} = \frac{5 + 4\alpha}{2 + \alpha}
+\]
+This demonstrates that altruism can, perhaps counterintuitively, worsen equilibrium outcomes in atomic games. However, in symmetric load balancing games, they showed that moderate altruism can restore optimality.
+
+\textcite{chen2014robust} introduce the smoothness framework as a unified
+tool for bounding the robust Price of Anarchy (PoA) in both atomic and
+nonatomic congestion games, demonstrating that smoothness guarantees extend
+simultaneously to pure, mixed, correlated, and coarse correlated equilibria.
+Building on this foundation, \textcite{chen2014altruism} identify a striking
+dichotomy: altruism deteriorates PoA in atomic environments but strictly
+improves PoA in nonatomic (Wardrop) settings. Moreover, they further show
+that in symmetric singleton congestion games with linear latency functions,
+the pure PoA decreases monotonically as the average altruism level increases.
+
+
+\textcite{hoefer2009altruistic} examined equilibrium existence under altruism. While pure equilibria persist in symmetric singleton games with convex delays, the game may lack equilibria under concave latency. Furthermore, they proved that determining equilibrium existence is NP-hard in general, suggesting that social preferences can break the finite improvement property characteristic of classical congestion games.
+
+On the spiteful side, \textcite{kleer2017perception} proposed a parameterized perception model, where agents perceive others’ congestion scaled by $\rho$, and social cost is evaluated with scale $\sigma$. Here, $\rho > 1$ captures altruism, while $\rho < 1$ captures spite. They derived tight bounds on PoA and PoS for affine latency games over all $(\rho, \sigma)$ combinations, showing that tuning perception can significantly affect inefficiency.
+
+\textcite{schroder2020spite} extended this framework by establishing upper bounds on PoA and PoS under high spite (very negative $\rho$), thus answering open questions from Kleer and Schäfer. His results confirm that strong hostility leads to maximal inefficiency, further motivating refined models for social preferences in routing and resource games.
+
+Other generalizations explore diverse social structures:\textcite{bilo2013} models heterogeneous altruistic preferences using a 
+global social context matrix $\Gamma$, where each player $i$ evaluates a weighted combination of all players' true costs $\tilde{c}_i(s)=\sum_j \gamma_{ij}c_j(s)$. Under nonnegative, restricted, and symmetric $\Gamma$, the resulting congestion game remains an exact potential game, ensuring pure Nash equilibrium existence and bounded inefficiency.; \textcite{kuznetsov2010range} incorporate friend-oriented utility into 
+network formation by modifying each player's objective to combine self-payoff 
+with the payoffs of an exogenously defined friendship set, and analyze resulting 
+equilibria under multiple stability notions (unilateral, pairwise, and coalition-based). 
+They show that such relational preferences can fundamentally change stable 
+network outcomes, allowing dense and cohesive community structures to emerge 
+as equilibrium networks that would be unstable under purely selfish behavior; and \textcite{iwan2010fairness} extend classical load balancing models by assuming that players are not purely selfish but also care about fairness in how load is distributed across machines or resources. Instead of minimizing only their individual latency, players incorporate a fairness penalty term—such as envy, load inequality, or deviation from balanced allocation—into their perceived cost. This modification changes equilibrium behavior: players may choose strategies that result in more balanced and less envious allocations, potentially sacrificing small amounts of efficiency to avoid unfair or highly skewed outcomes.
+
+These contributions reveal a nuanced landscape: altruism and spite can both enhance and destabilize equilibrium outcomes, depending on the game structure, latency properties, and player heterogeneity. Effective modeling requires careful attention to how social preferences interact with congestion dynamics and strategic incentives.
+
+\subsection{Coalition Formation in Congestion Games}
+
+While classical congestion games assume non-cooperative players, several extensions explore the impact of cooperation through \emph{coalition formation}. In such settings, groups of players jointly choose strategies to optimize collective payoffs, leading to new equilibrium concepts and structural properties.
+
+\textcite{fotakis2006atomic} introduced coalition-based atomic congestion games, modeling each coalition as a meta-player optimizing total latency across its members. For linear latency functions, they showed that these games admit exact potential functions and thus pure-strategy Nash equilibria still exist. Interestingly, the Price of Anarchy (PoA) remains the same on identical parallel-link networks unless coalitions grow very large. However, they also identified increased computational complexity: finding a coalition equilibrium becomes PLS-hard, even if best-response dynamics retain convergence under certain cost conditions.
+
+\textcite{kuniavsky2014coalitional} further formalized coalitional congestion games and analyzed when such games preserve potential structure. They established necessary and sufficient conditions for equilibrium existence based on coalition structures and strategy sets. Their findings suggest that in many cases, forming coalitions destroys the potential function, making equilibrium guarantees less robust.
+
+In the nonatomic setting, \textcite{wan2012composite} considered a composite model blending individuals and coalitions. He proved that coalition formation strictly benefits participants: at equilibrium, each coalition’s average cost and each individual's cost do not exceed their costs in the non-cooperative game. Moreover, larger coalitions achieve lower average delay than smaller ones—yet individual players fare best—highlighting complex efficiency trade-offs in such systems.
+
+The \emph{Price of Collusion (PoC)} was introduced by \textcite{hayrapetyan2006collusion} to quantify how much collusion improves or worsens outcomes. For symmetric load-balancing games with convex latency, they showed $\mathrm{PoC} \leq 2$, but in asymmetric settings PoC can grow arbitrarily large. Notably, they demonstrated that in nonatomic games with splittable flows, collusion cannot harm social cost ($\mathrm{PoC} = 1$), contrasting sharply with atomic cases.
+
+More recently, \textcite{sultana2024coalition} proposed a partition-form model where each coalition’s payoff depends on how the rest of the players group themselves. Assuming inter-coalition Nash play, they characterized stable coalition structures. Surprisingly, they found that grand coalitions (full cooperation) are rarely stable unless extreme conditions hold—such as one overwhelmingly dominant resource. Instead, typical equilibria feature only small coalitions or none at all, sometimes resulting in cyclic re-formations. Their findings reveal that coordination costs and structural asymmetries can prevent efficient coalitional outcomes, even when social welfare would be improved.
+
+These studies show that allowing coalition formation introduces richer dynamics, new computational challenges, and the need for refined equilibrium concepts like strong equilibria, coalition-proof Nash, or partition equilibria. Furthermore, the interaction of coalitional behavior with social preferences (e.g., altruism or spite) opens further complexity: cooperation can amplify or mitigate inefficiencies depending on the network, latency function, and agents’ incentives.
+（可以加一些社会学的研究，ingroup outgroup的倾向，让讨论更方针——
+\subsection{Research Gap and Thesis Statement}
+The existing literature studies three well-develope yet fundamentally independent research fields: (i) classical congestion games based on potential theory, (ii) social-preference extensions that model altruism and spite, and (iii) coalition formation and cooperative behavior in resource networks. The classic congestion models assume fully selfish players, and use potential functions to support the Nash equilibria. Studies on altruism and spite usually focus on fully non-cooperative agents and equilibrium efficiency measures such as price of anarchy. Meanwhile, research on coalitional congestion games often treats players as purely rational and self-interested and neglects how social concerns could reshape cooperation itself. 
+
+Although each direction has been studied extensively, their intersection of how social preferences influence the formation and stability of coalitions remains understudied. In particular, we are missing a clear understanding of how coalition-based social preferences, specifically in-group altruism and out-group spite, shape the coalition in congestion games. Additionally, many prior researches assume perfect rational behavior and complete information, overlooking factors such as the learning noise and imperfections of feedback, which is common in realistic systems. Such assumption lead to the problem of neglecting the impact of learning noise and imperfect feedback on the outcomes of the games.  
+
+
+\section{Preliminaries}
+
+We study a congestion game in which players may form coalitions and evaluate outcomes using social preferences that combine in-group altruism and out-group spite. These preferences are parameterized by an internal weight $\rho$ and an external weight $\sigma$, and they determine how coalition members aggregate one another’s payoffs and the payoffs of players outside the coalition. Coalition structures are not fixed: they may form, break, or reorganize endogenously. Our central question is therefore not whether selfish Nash equilibria remain unchanged, but rather for given values of $(\rho,\sigma)$ which coalition structures remain stable—i.e., no coalition has an incentive to deviate, split, or merge—and whether the induced game continues to preserve potential-game guarantees under such coalition deviations.
+
+\subsection{Congestion basics}
+\label{subsec:congestion-basics}
+
+Let $N=\{1,\dots,n\}$ be a finite set of players, and $K=\{1,\dots,m\}$ a finite set of resources. 
+Each player selects exactly one resource.  
+A strategy profile is $s=(s_1,\dots,s_n)\in K^n$, where $s_i\in K$ denotes the resource chosen by player $i$.
+
+For each resource $k\in K$ and profile $s$, define the congestion level
+\[
+n_k(s) \;=\; \bigl|\{\, i\in N : s_i = k \,\}\bigr|.
+\]
+
+Following the standard setting of linear congestion games, each resource $k$ is equipped with a 
+\emph{linear latency function}  
+\[
+f_k(n) \;=\; \alpha_k n + \beta_k,
+\qquad \alpha_k,\beta_k \ge 0,
+\]
+where the latency increases linearly with congestion.
+
+If player $i$ selects resource $k$ under profile $s$, her latency is
+\[
+\ell_i(s) \;=\; f_{s_i}\!\bigl( n_{s_i}(s) \bigr)
+= \alpha_{s_i}\, n_{s_i}(s) + \beta_{s_i}.
+\]
+
+For convenience, we define the selfish payoff
+\[
+\mu_i(s) := -\ell_i(s),
+\]
+so that higher payoff corresponds to lower latency.
+Under purely selfish behavior, maximizing $\mu_i$ yields the standard congestion game.
+
+
+\subsection{Altruism and Spite}
+\label{subsec:altruism-spite}
+
+nPlayers may also care about the performance of others, particularly those inside or outside their coalition. We model this using a linear social-preference operator. A coalition structure (defined formally in Section~\ref{subsec:coalition-structure}) partitions $N$ into disjoint coalitions. Let $P$ denote such a partition, and let $C_i(P)$ denote the coalition containing $i$.
+
+Given a strategy profile $s$ and coalition structure $P$, the utility of player $i$ has three components:
+(i) own payoff $\mu_i(s)$;  
+(ii) a weight $\rho$ assigned to the payoffs of in–group members $C_i(P)\setminus \{i\}$;  
+(iii) a weight $-\sigma$ assigned to the payoffs of out–group members $N\setminus C_i(P)$.
+
+Formally,
+\begin{equation}
+    U_i(s;P)
+    \;=\;
+    \mu_i(s)
+    \;+\;
+    \rho
+    \sum_{j \in C_i(P)\setminus\{i\}} \mu_j(s)
+    \;-\;
+    \sigma
+    \sum_{m \notin C_i(P)} \mu_m(s).
+    \label{eq:Ui}
+\end{equation}
+
+The parameters $\rho,\sigma\in\mathbb{R}$ are fixed and shared by all players.  
+The interpretation is standard: $\rho>0$ represents in–group altruism, 
+$\sigma>0$ represents out–group spite, and $\rho=\sigma=0$ yields the classical selfish model.
+
+\medskip
+\paragraph{Matrix representation.}
+The utility~\eqref{eq:Ui} can be written in the linear form
+\[
+U_i(s;P)=\sum_{j=1}^n \gamma_{ij}(P)\,\mu_j(s),
+\]
+where the social-preference matrix $\Gamma(P)=(\gamma_{ij}(P))$ is defined by
+\[
+\gamma_{ij}(P)
+=
+\begin{cases}
+1, & j=i,\\[2pt]
+\rho, & j\neq i,\; j\in C_i(P),\\[2pt]
+-\sigma, & j\notin C_i(P).
+\end{cases}
+\]
+By construction:  
+(i) $\gamma_{ii}(P)=1$ for all $i$;  
+(ii) whenever players $i$ and $j$ belong to the same coalition, 
+$\gamma_{ij}(P)=\gamma_{ji}(P)=\rho$;  
+(iii) whenever $i$ and $j$ belong to different coalitions, 
+$\gamma_{ij}(P)=\gamma_{ji}(P)=-\sigma$.
+Thus the matrix $\Gamma(P)$ always has unit diagonal and symmetric off-diagonal entries.
+
+\subsection{Potential Function of the Underlying Congestion Game}
+\label{subsec:potential-function}
+
+Before introducing coalitional incentives, it is useful to recall the potential structure 
+of the underlying selfish congestion game.  
+The game described in Section~\ref{subsec:congestion-basics} is an exact potential game 
+in the classical sense of Rosenthal, with potential
+\begin{equation}
+    \Phi^0(s)
+    \;:=\;
+    \sum_{k\in K}
+    \sum_{x=1}^{n_k(s)} f_k(x),
+    \label{eq:rosenthal-potential}
+\end{equation}
+where $f_k(\cdot)$ is the latency function of resource $k$.
+If a single player $i$ changes her action while all others remain fixed, then
+\[
+\Phi^0(s_i',s_{-i}) - \Phi^0(s)
+    = \ell_i(s_i',s_{-i}) - \ell_i(s),
+\]
+so any unilateral cost-improving deviation strictly decreases $\Phi^0$.  
+Thus the pure Nash equilibria of the selfish game coincide with the local minima of 
+$\Phi^0$.
+\subsection{Preservation and Limitations of the Potential-Game Structure}
+
+The social-preference operator $\Gamma(P)$ introduced in
+Section~\ref{subsec:altruism-spite} satisfies
+\[
+\gamma_{ii}(P)=1,
+\qquad 
+\gamma_{ij}(P)=\gamma_{ji}(P)
+\quad (i\neq j),
+\]
+for every coalition structure $P$.  
+Symmetry and unit diagonal are therefore always preserved.
+However, the entries $\gamma_{ij}(P)$ may be negative whenever
+$\sigma>0$, corresponding to out--group spite.
+
+Bil\`o's Theorem~\ref{thm:bilo}(3.1) guarantees the existence of an exact
+potential function only under the stronger \emph{restricted altruistic}
+assumptions of his model, namely:
+\[
+\gamma_{ij} \ge 0
+\quad\text{and}\quad 
+\sum_{j} \gamma_{ij} = 1
+\quad\text{for all } i,
+\]
+in addition to symmetry.  
+When these nonnegativity and normalization constraints hold, the game
+induced by $(U_i(\cdot;P))_{i\in N}$ is an exact potential game, and a
+pure Nash equilibrium exists.
+
+In our framework, the condition $\gamma_{ij}(P)\ge 0$ is equivalent to
+requiring $\sigma=0$, i.e.\ the absence of spite toward out--groups.
+Thus Bil\`o's exact-potential result applies \emph{only} on the
+altruistic slice
+\[
+(\rho,\sigma)\in \{\,(\rho,0): \rho \ge 0\,\}.
+\]
+
+For general social-preference parameters $(\rho,\sigma)$—in particular
+whenever $\sigma>0$ introduces negative off-diagonal terms—the
+restricted-altruism conditions are violated and Bil\`o's construction no
+longer applies.  In these regions we cannot rely on exact potential
+arguments to guarantee the existence of pure Nash equilibria; instead we
+turn to the weaker notion of \emph{potential compatibility} developed in
+Section~\ref{subsec:potential-function}, where Rosenthal’s potential
+$\Phi^0$ acts as a Lyapunov function for small $(\rho,\sigma)$.
+
+
+
+
+\subsection{Coalition Structure and Stability}
+\label{subsec:coalition-structure}
+
+A \emph{coalition structure} is a partition 
+\[
+P=\{C^1,\dots, C^r\}
+\]
+of the player set $N$ into pairwise disjoint coalitions whose union is $N$.
+Two extreme cases will be important throughout:
+\begin{itemize}
+    \item the \emph{singleton partition} 
+    $P^{\mathrm{sing}} = \bigl\{\{1\},\dots,\{n\}\bigr\}$,
+    where every player acts independently; 
+    \item the \emph{grand coalition} 
+    $P^{\mathrm{grand}}=\{N\}$,
+    where all players coordinate jointly.
+\end{itemize}
+Any intermediate partition $P$ represents a configuration in which some players form 
+coordinating groups while others remain separate.
+
+\paragraph{Coalition utilities.}
+Given a coalition structure $P$ and a strategy profile $s$, 
+each player’s utility is given by~\eqref{eq:Ui}.
+The utility of a coalition $C\in P$ is the aggregate utility of its members:
+\[
+U_C(s;P) := \sum_{i\in C} U_i(s;P).
+\]
+A coalition behaves as a single decision-making entity and chooses the joint actions 
+of all its members to maximize $U_C(\cdot;P)$.
+
+\paragraph{Deviation by a coalition.}
+For a fixed coalition structure $P$, a strategy profile $s^\ast$ is a 
+\emph{coalitional Nash equilibrium} if no coalition can profitably change 
+its joint action.  
+Formally, for every $C\in P$ and every alternative joint deviation $s'_C$,
+\[
+U_C(s^\ast;P)\;\ge\;U_C(s'_C, s_{-C}^\ast;P).
+\]
+This notion holds the partition $P$ fixed and considers only deviations in
+strategy space.
+
+\medskip
+\paragraph{Structural deviations (split and join).}
+In many environments, players may freely enter or exit coalitions, and 
+coalitions may merge or split.  
+Thus we must also consider deviations in the \emph{coalition structure} itself.
+
+\begin{itemize}
+  \item \textbf{Split deviation.}
+  A coalition $C^{ab}\in P$ may split into two subcoalitions
+  $C^a$ and $C^b$ (a refinement of $C$), thereby inducing a new
+  partition $P'$.  
+  The split is profitable if the total utility of the resulting
+  subcoalitions strictly exceeds the utility of the original coalition:
+  \[
+  U_{C^a}(s;P') + U_{C^b}(s;P')
+  \;>\;
+  U_{C^{ab}}(s;P).
+  \]
+
+  \item \textbf{Join deviation.}
+  Two coalitions $C^a, C^b\in P$ may merge into a single coalition
+  $C^{ab}=C^a\cup C^b$, producing a coarser partition $P'$.  
+  The join is profitable if the utility of the merged coalition strictly
+  exceeds the sum of the utilities of its constituents:
+  \[
+  U_{C^{ab}}(s;P')
+  \;>\;
+  U_{C^a}(s;P) + U_{C^b}(s;P).
+  \]
+\end{itemize}
+
+These structural deviations represent a coalition's ability to 
+freely leave a group, join another group, or merge for coordinated action. *In our later study, we assume every coalition member will only consider structural deviations after the coalitions reach the coalitional Nash equilibrium. 
+
+\medskip
+\paragraph{Coalition Equilibrium (New Stability Concept).}
+Because players may revise \emph{both} their joint actions and their group 
+memberships, we define the following notion of stabilityity.
+\begin{definition}[Coalition Equilibrium]
+A pair $(P^\ast,s^\ast)$ consisting of a coalition structure and a
+strategy profile is a \emph{coalition equilibrium} if the following two
+conditions hold:
+
+\begin{itemize}
+\item[(i)] \textbf{Action stability (internal stability within $P^\ast$).}
+Given the stable coalition structure $P^\ast$, the profile $s^\ast$ is
+stable against any coalition-level deviation in actions:
+\[
+U_C(s^\ast;P^\ast)
+\;\ge\;
+U_C(s'_C, s_{-C}^\ast;P^\ast)
+\quad\text{for all } C\in P^\ast \text{ and all joint deviations } s'_C.
+\]
+\item[(ii)] \textbf{Structural stability (no profitable split or join).}
+The coalition structure $P^\ast$ is stable against any refinement or
+coarsening.  That is, for every coalition $C\in P^\ast$:
+
+\begin{itemize}
+    \item \emph{No profitable split:}  
+    for every refinement of $C$ into two subcoalitions $C^a,C^b$ inducing
+    a partition $P'$,
+    \[
+    U_{C^a}(s^\ast;P') + U_{C^b}(s^\ast;P')
+    \;\le\;
+    U_{C^{ab}}(s^\ast;P^\ast).
+    \]
+
+    \item \emph{No profitable join:}  
+    for every pair of coalitions $C^a,C^b\in P^\ast$ and every coarsening
+    that merges them into $C^{ab}=C^a\cup C^b$ inducing a partition $P'$,
+    \[
+    U_{C^{ab}}(s^\ast;P')
+    \;\le\;
+    U_{C^a}(s^\ast;P^\ast)+U_{C^b}(s^\ast;P^\ast).
+    \]
+\end{itemize}
+
+
+
+\end{itemize}
+
+If either property fails—if some split/join is profitable, or if some
+coalition can improve by changing its joint action—then
+$(P^\ast,s^\ast)$ is not a coalition equilibrium.
+\end{definition}
+
+This stability notion captures precisely the idea that coalitions form, dissolve,
+or merge only when doing so increases the utility of the participating players.
+Under parameters $(\rho,\sigma)$ that encourage strong in-group altruism or 
+out-group hostility, the resulting equilibrium partition may be a singleton 
+partition, the grand coalition, or an intermediate factional structure.
+
+A coalition structure that is stable in both senses admits neither 
+incentives to reorganize the partition nor incentives for coordinated 
+action changes.  
+Our objective is to understand how the social-preference parameters 
+$(\rho,\sigma)$ guide randomly formed coalitions toward such stable 
+configurations and how altruism and spite shape the emergence of 
+singleton partitions, grand coalitions, or intermediate stable partitions.
+
+\section{Social-Preference Regimes}
+\label{sec:rho-sigma-first}
+
+In this section we begin from the social side of the model---altruism
+and spite---and work \emph{backwards} toward the congestion
+environment.  Rather than fixing the resource parameters first and
+examining how $(\rho,\sigma)$ adapt, we instead identify qualitative
+coalition patterns that different social-preference regimes should
+generate in an abstract congestion game.  Only then do we ask what
+kinds of resource environments make these regimes observable and
+analytically tractable.
+
+\begin{proposition}[A computable sufficient bound for potential-compatibility]
+\label{prop:pc-bound}
+Consider a congestion game with linear latencies 
+$f_k(n)=\alpha_k n+\beta_k$, and let 
+$\alpha_{\min}=\min_k \alpha_k>0$ and 
+$\alpha_{\max}=\max_k \alpha_k$.
+If the social-preference parameters satisfy
+\[
+\rho+\sigma \;\le\; \frac{\alpha_{\min}}{2 n^2 \alpha_{\max}},
+\]
+then $(\rho,\sigma)$ is potential-compatible: for every coalition $C$ 
+and deviation $s'\to s$, 
+\[
+\Delta U_C(\rho,\sigma)\ge 0 
+\quad\Longrightarrow\quad 
+\Delta\Phi^0\le 0.
+\]
+\end{proposition}
+
+\begin{proof}
+Fix a coalition $C$ and deviation $s'=(s'_C,s_{-C})\to s$.  
+Write
+\[
+S_{\mathrm{in}} := \sum_{i\in C} \Delta\mu_i, 
+\qquad    
+S_{\mathrm{out}} := \sum_{m\notin C} \Delta\mu_m,
+\qquad
+S_{\mathrm{tot}} := S_{\mathrm{in}} + S_{\mathrm{out}}.
+\]
+
+For linear latencies $f_k(n)=\alpha_k n+\beta_k$, the Rosenthal
+potential satisfies
+\[
+\Delta\Phi^0 = - S_{\mathrm{tot}},
+\]
+so potential-compatibility requires that
+\[
+\Delta U_C \ge 0 \quad \Rightarrow \quad S_{\mathrm{tot}} \ge 0.
+\]
+
+Using the utility definition,
+\[
+\Delta U_C
+= 
+(1+\rho(|C|-1)) S_{\mathrm{in}}
+\;-\;
+\sigma |C|\, S_{\mathrm{out}} .
+\tag{1}
+\label{eq:uc-expand}
+\]
+
+\paragraph{Bounding the social-preference distortion.}
+Each individual payoff change satisfies
+\[
+|\Delta\mu_i|
+\;\le\;
+\alpha_{\max}(n-1),
+\]
+because a player's load can change by at most $n-1$.  Hence
+\[
+|S_{\mathrm{in}}| \le |C|\,\alpha_{\max}(n-1) \le n^2\alpha_{\max},
+\qquad
+|S_{\mathrm{out}}| \le n^2\alpha_{\max}.
+\tag{2}
+\label{eq:sin-sout-bounds}
+\]
+
+The part of $\Delta U_C$ that comes from social preferences is therefore
+bounded by
+\[
+|\rho|\,|C|(|C|-1)\,\alpha_{\max} n
++
+|\sigma|\,|C|(n-|C|)\,\alpha_{\max} n
+\;\le\;
+(\rho+\sigma)\, n^2\,\alpha_{\max}.
+\tag{3}
+\label{eq:distortion-bound}
+\]
+
+\paragraph{Baseline scale of $S_{\mathrm{tot}}$.}
+Whenever $S_{\mathrm{tot}}\neq 0$, at least one player's load changes by
+one unit on some resource with slope at least $\alpha_{\min}$, implying  
+\[
+|S_{\mathrm{tot}}| \;\ge\; \alpha_{\min}.
+\tag{4}
+\label{eq:baseline}
+\]
+
+\paragraph{Preventing sign reversal.}
+Suppose $(\rho+\sigma) \le \alpha_{\min}/(2n^2\alpha_{\max})$.
+Combining \eqref{eq:distortion-bound} and \eqref{eq:baseline},
+\[
+\frac{|\text{distortion}|}{|S_{\mathrm{tot}}|}
+\;\le\;
+\frac{(\rho+\sigma) n^2\alpha_{\max}}{\alpha_{\min}}
+\;\le\;
+\frac12 .
+\]
+Thus the social-preference distortion in \eqref{eq:uc-expand} can change
+the magnitude of $S_{\mathrm{tot}}$, but not its sign:
+\[
+\operatorname{sign}(\Delta U_C)
+=
+\operatorname{sign}(S_{\mathrm{tot}}).
+\]
+
+Hence  
+\[
+\Delta U_C\ge 0 \quad\Rightarrow\quad S_{\mathrm{tot}}\ge 0
+\quad\Rightarrow\quad \Delta\Phi^0 \le 0.
+\]
+Thus $(\rho,\sigma)$ is potential-compatible.
+\end{proof}
+
+
+
+This result is deliberately conservative and not meant for calibration.
+Its value is conceptual: it guarantees the existence of a small
+neighborhood around $(\rho,\sigma)=(0,0)$ in which social preferences
+remain a perturbation of the selfish game and cannot overturn the descent
+directions of the classical potential.
+
+\subsection{Speculative Regimes in $(\rho,\sigma)$}
+\label{subsec:regimes-rho-sigma}
+
+Players evaluate outcomes according to
+\[
+U_i(s;P)
+=
+\mu_i(s)
++\rho \sum_{j\in C_i(P)\setminus\{i\}} \mu_j(s)
+-\sigma \sum_{m\notin C_i(P)} \mu_m(s),
+\]
+and coalitions maximize $U_C(s;P)=\sum_{i\in C}U_i(s;P)$.
+Even without specifying resources, the pair $(\rho,\sigma)$ induces
+distinct qualitative patterns of coalition formation.  We group these
+patterns into four speculative regimes.
+\paragraph{(1) Nearly selfish regime: $(\rho,\sigma)$ in the potential-compatible basin.}
+
+Let 
+\[
+\mathcal{B}
+:= 
+\Bigl\{(\rho,\sigma)\in\mathbb{R}^2 
+:\; \rho+\sigma \le \frac{\alpha_{\min}}{2 n^2 \alpha_{\max}} \Bigr\}
+\subset\mathbb{R}^2
+\]
+denote the sufficient potential-compatible region established in
+Proposition~\ref{prop:pc-bound}.  
+If $(\rho,\sigma)\in\mathcal{B}$, then the perturbation introduced by
+social preferences satisfies
+\[
+\bigl| U_i(s;P) - \mu_i(s) \bigr|
+= O(\rho n + \sigma n)
+\ll \Delta \Phi^0,
+\]
+so that unilateral and coalitional deviations preserve the descent
+direction of Rosenthal's potential~$\Phi^0$.  
+In this regime:
+
+\begin{itemize}
+    \item all coalition-improving deviations are potential-improving;
+    \item coalitional equilibria coincide with the (Rosenthal) Nash 
+    equilibria of the selfish congestion game;
+    \item the coalition structure $P$ is strategically inert:
+    $U_C(s;P)$ is $\varepsilon$-close to 
+    $\sum_{i\in C}\mu_i(s)$ with $\varepsilon\to 0$ as
+    $(\rho,\sigma)\to(0,0)$.
+\end{itemize}
+
+Hence $\mathcal{B}$ is a small convex neighborhood of the origin in
+which congestion incentives fully dominate social preferences.
+\paragraph{(2) Altruistic regime: $\rho$ large, $\sigma$ small.}
+
+Fix constants $\bar\rho>\frac{\alpha_{\min}}{2 n^2 \alpha_{\max}}$ and $0<c_A<1$.
+Define the altruistic region
+\[
+\mathcal{A}
+:=
+\Bigl\{(\rho,\sigma)\in\mathbb{R}^2:\; 
+\rho \ge \bar\rho,\;
+|\sigma| \le c_A\,\rho 
+\Bigr\}.
+\]
+When $(\rho,\sigma)\in\mathcal{A}$, coalition utilities satisfy
+\[
+U_C(s;P)
+=
+\sum_{i\in C}\mu_i(s)
+\;+\;
+\rho\,\sum_{i\neq j\in C}\mu_j(s)
+\;+\;
+O(\sigma n),
+\]
+so the dominant marginal gain comes from enlarging $C$.  
+Thus:
+\begin{itemize}
+    \item join-deviations strictly dominate split-deviations;
+    \item coalition sizes monotonically increase under best responses;
+    \item the grand coalition $P^{\mathrm{grand}}=\{N\}$ is the natural
+    stable configuration whenever congestion does not explode.
+\end{itemize}
+
+\paragraph{(3) Spiteful regime: $\rho$ small, $\sigma$ large.}
+
+Fix constants $\bar\sigma>\frac{\alpha_{\min}}{2 n^2 \alpha_{\max}}$ and $0<c_S<1$.
+Define the spiteful region
+\[
+\mathcal{S}
+:=
+\Bigl\{(\rho,\sigma)\in\mathbb{R}^2:\; 
+\sigma \ge \bar\sigma,\;
+|\rho| \le c_S\,\sigma 
+\Bigr\}.
+\]
+Now
+\[
+U_C(s;P)
+=
+\sum_{i\in C}\mu_i(s)
+\;-\;
+\sigma\sum_{i\in C}\sum_{m\notin C}\mu_m(s)
+\;+\;O(\rho n),
+\]
+so the dominant marginal incentive is to minimize exposure to
+out-groups.  
+Therefore:
+\begin{itemize}
+    \item join-deviations dilute the coalition’s ability to target
+    outsiders;
+    \item split-deviations strictly dominate except in degenerate cases;
+    \item stable coalition structures are refinements of the
+    singleton partition.
+\end{itemize}
+
+\paragraph{(4) Factional regime: $\rho$ and $\sigma$ large and comparable.}
+
+Fix constants $\bar r>0$ and
+$0<\underline{\lambda}<\overline{\lambda}<\infty$.
+Let
+\[
+\mathcal{F}
+:= 
+\Bigl\{(\rho,\sigma)\in\mathbb{R}^2:\; 
+\rho\ge \bar r,\;\sigma\ge \bar r,\;
+\underline{\lambda} \le \tfrac{\sigma}{\rho} \le \overline{\lambda}
+\Bigr\}.
+\]
+In this band, both in--group and out--group terms scale as
+\[
+U_C(s;P)
+\approx
+\rho\,\Bigl(
+\sum_{i\neq j\in C}\mu_j(s)
+-
+\lambda\sum_{i\in C}\sum_{m\notin C}\mu_m(s)
+\Bigr),
+\quad
+\lambda:=\tfrac{\sigma}{\rho},
+\]
+so neither “join at all cost” nor “split at all cost” is optimal.  
+Balancing the two forces yields:
+\begin{itemize}
+    \item stable coalitions of intermediate cardinalities;
+    \item equilibrium partitions consisting of several nontrivial blocs;
+    \item a sharply differentiated coalition landscape reminiscent of 
+    political factions or competitive gangs.
+\end{itemize}
+
+\paragraph{(5) Phase-diagram structure.}
+
+Up to the choice of thresholds
+$(\bar\rho,\bar\sigma,\bar r,c_A,c_S,
+\underline{\lambda},\overline{\lambda})$,
+the $(\rho,\sigma)$-plane admits a natural coarse partition:
+\[
+\mathbb{R}^2
+\approx
+\mathcal{B}
+\;\sqcup\;
+\mathcal{A}
+\;\sqcup\;
+\mathcal{S}
+\;\sqcup\;
+\mathcal{F},
+\]
+corresponding respectively to:
+\begin{enumerate}
+    \item the potential-compatible basin (nearly selfish behavior);
+    \item the altruistic region (grand-coalition behavior);
+    \item the spiteful region (fragmentation into singletons);
+    \item the factional band (multiple intermediate-sized blocs).
+\end{enumerate}
+These sets are defined independently of any resource structure; they
+capture the pure social-preference geometry of the model.
+
+
+
+
+
+
+
+\subsection{Designing a Resource Environment to Reveal These Regimes}
+\label{subsec:choosing-resources}
+
+With the qualitative regimes identified, the purpose of the resource
+environment becomes clear: to create a congestion landscape in which the
+strategic consequences of each regime become observable and distinct.
+
+Two principles guide this design.
+
+\begin{enumerate}
+    \item \textbf{Avoid degenerate environments.}  
+    If all resources are identical and congestion is mild, then altruism
+    and spite move utilities without producing meaningful strategic
+    trade-offs.  Split and join incentives collapse, and the phase
+    diagram loses expressive power.
+
+    \item \textbf{Use controlled heterogeneity.}  
+    To differentiate between grand coalitions, fragmentation, and
+    factions, resources must reward different coalition sizes.  
+    We therefore seek:
+    \begin{itemize}
+        \item a ``tight'' resource: attractive for small groups but
+        punitive for large coalitions (high $\alpha_k$, low $\beta_k$);
+        \item a ``forgiving'' resource: tolerates large coalitions (low
+        $\alpha_k$, higher $\beta_k$);
+        \item optionally, a resource best suited for medium-sized groups.
+    \end{itemize}
+\end{enumerate}
+
+This motivates a simple heterogeneous environment used in the
+experimental sections.  For example:
+\[
+f_1(n) = 1\cdot n + 0,
+\qquad
+f_2(n) = 0.5\cdot n + 2,
+\qquad
+f_3(n) = 1.5\cdot n + 1.
+\]
+
+Such an environment ``reveals'' the social regimes:
+
+\begin{itemize}
+    \item In the nearly selfish region, players distribute according to
+    congestion slopes; coalition structure has minimal effect.
+    \item In the altruistic region, coalitions gravitate toward the
+    forgiving resource, and the grand coalition becomes stable.
+    \item In the spiteful region, the tight resource amplifies the
+    incentive to avoid sharing, promoting fragmentation.
+    \item In the factional band, resources differentially appeal to
+    medium-sized groups, creating stable blocs.
+\end{itemize}
+
+Rather than adjusting $(\rho,\sigma)$ to fit the resource environment,
+we reverse the logic: we begin with the coalition patterns implied by
+social preferences and then design a resource environment that makes
+these patterns visible, comparable, and analytically tractable.
+
+
+
+
+
+
+\section{Computational Experiments}
+
+To validate the theoretical predictions established in Section 3 and to explore the empirical behavior of coalitional congestion games under social preferences, we conduct a series of numerical simulations. Our analysis focuses on four key aspects: (i) the sensitivity of Nash equilibria to social-preference parameters across different coalition structures, (ii) the empirical validity of the potential-compatibility condition, (iii) the convergence properties of logit learning dynamics, and (iv) the robustness of selfish equilibria against arbitrary coalition formations.
+
+\subsection{Experimental Setup}
+
+We consider atomic congestion games with $n=6$ players and $m=3$ resources. Each resource $k$ is assigned a linear latency function $f_k(n) = a_k n + b_k$, where coefficients $a_k$ and $b_k$ are drawn uniformly from the intervals $[1,10]$ and $[0,5]$, respectively. This configuration balances computational tractability with sufficient complexity to capture non-trivial strategic interactions.
+
+Social preferences are parameterized by in-group altruism $\alpha \in [0,1]$ and out-group spite $\sigma \in [0,1]$. We investigate multiple coalition structures, including singleton coalitions (the non-cooperative baseline), half-split coalitions (two equal-sized groups), and paired coalitions (three groups of two). For the learning dynamics, we employ a logit response protocol governed by a temperature parameter $\tau$, where lower values indicate higher rationality. All Nash equilibria are computed via exhaustive enumeration for smaller instances and best-response dynamics for larger state spaces. As a benchmark, the baseline selfish game ($\alpha=0, \sigma=0$) in our setup yields 60 pure-strategy Nash equilibria, all sharing identical Rosenthal potential values.
+
+\subsection{Equilibrium Structure Under Social Preferences}
+
+We first examine whether social preferences alter the equilibrium set of the selfish congestion game across distinct coalition structures. We compute Nash equilibria for varying combinations of $\alpha$ and $\sigma$ (ranging from 0 to 1.0) under three specific structures: singletons, half-splits ($C_1=\{0,1,2\}, C_2=\{3,4,5\}$), and pairs ($C_1=\{0,1\}, C_2=\{2,3\}, C_3=\{4,5\}$).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{equilibria_comparison.png}
+\caption{Nash equilibria counts across social-preference parameters $(\alpha, \sigma)$ for three coalition structures: singleton (left), half-split (center), and paired (right). Colors indicate the number of equilibria. While singleton games remain unaffected, coarser partitions (half-split and pairs) show significant sensitivity to out-group spite.}
+\label{fig:equilibria_comparison}
+\end{figure}
+
+Figure~\ref{fig:equilibria_comparison} presents the equilibrium counts for each $(\alpha,\sigma)$ pair. For singleton coalitions, the equilibrium count remains constant at 60 across all parameter combinations, confirming that social preferences do not alter equilibrium existence or multiplicity when players act independently. However, once coordination is introduced, the landscape changes significantly. In the half-split configuration, equilibrium counts vary between 24 and 60. Notably, higher levels of spite ($\sigma > 0.5$) consistently reduce the number of equilibria, suggesting that out-group hostility destabilizes certain strategic profiles. The paired coalition structure exhibits the highest sensitivity, with equilibrium counts dropping to 24 when $\sigma > 0$. These results indicate that coalition structure acts as a critical mediator: while altruism ($\alpha$) tends to preserve equilibria, out-group spite ($\sigma$) disrupts stability, particularly when coordination allows these preferences to be effectively exercised.
+
+\subsection{Potential-Compatibility Analysis}
+
+Next, we empirically test the potential-compatibility condition defined in Section 3.2, which ensures that coalition-improving deviations align with decreases in Rosenthal's potential. We sample a $6 \times 6$ grid over the parameter space $(\alpha, \sigma) \in [0,1]^2$. For each parameter pair, we generate 2000 random deviations from random initial profiles under a grand coalition structure and calculate the "compatibility score"—defined as the proportion of coalition-improving moves ($\Delta U_C > 0$) that weakly decrease the potential ($\Delta \Phi^0 \le 0$).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.5\textwidth]{potential_compatibility.png}
+\caption{Heatmap of potential-compatibility scores over the $(\alpha, \sigma)$ parameter space. Each cell represents the proportion of coalition-improving deviations that align with the potential function, based on 2000 random samples. The degradation of compatibility away from the origin highlights the tension between social preferences and potential-based stability.}
+\label{fig:potential_compatibility}
+\end{figure}
+
+As shown in Figure~\ref{fig:potential_compatibility}, perfect compatibility (a score of 1.0) is rarely achieved in the sampled space. Scores typically range from 0.4 to 0.8, exhibiting a clear gradient: compatibility is highest near the selfish baseline $(\alpha=0, \sigma=0)$ and degrades monotonically as either parameter increases. This finding suggests that while theoretical compatibility conditions exist, they are restrictive. In practice, strong social preferences—whether derived from altruism or spite—frequently create incentives that conflict with the global optimization inherent in Rosenthal's potential function.
+
+\subsection{Learning Dynamics and Convergence}
+
+We further investigate the convergence properties of logit learning dynamics. Using a paired coalition structure with mild social preferences ($\alpha = 0.1, \sigma = 0.1$), we simulate the system evolution under varying temperature parameters $\tau$, ranging from near-perfect rationality ($\tau = 0.01$) to high noise ($\tau = 1.0$).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{learning_convergence.png}
+\caption{Convergence of logit learning dynamics. The left panel plots the aggregate probability mass on Nash equilibria against temperature $\tau$. The right panel shows the number of stochastically stable equilibria. The results confirm asymptotic stability while highlighting the disruptive effect of noise in finite-temperature regimes.}
+\label{fig:learning_convergence}
+\end{figure}
+
+Figure~\ref{fig:learning_convergence} illustrates the probability mass allocated to Nash equilibria in the stationary distribution. At low noise levels ($\tau = 0.01$), the system concentrates 100\% of its mass on the identified Nash equilibria, validating the stochastic stability predictions. However, as $\tau$ increases, convergence quality degrades approximately linearly. At $\tau = 0.5$, only 86.1\% of the time is spent in equilibrium states, dropping to 75.1\% at $\tau = 1.0$. This demonstrates that while the theoretical limit $\tau \to 0$ guarantees stability, moderate learning noise in practical settings can lead to significant deviations from equilibrium behavior.
+
+\subsection{Robustness to Coalition Formation}
+
+Finally, we analyze the robustness of selfish Nash equilibria against arbitrary coalition formation. We randomly sample 100 coalition structures from the set of all possible partitions (Bell number $B(6) = 203$) and compute their equilibria under parameters $\alpha = 0.1, \sigma = 0.1$. We classify the results based on whether the new equilibrium set matches the original selfish equilibria.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{coalition_robustness.png}
+\caption{Robustness analysis across 100 random coalition structures with $\alpha = 0.1, \sigma = 0.1$. The complete absence of structures that preserve the selfish equilibrium set (green) illustrates that even mild social preferences combined with subgroup coordination fundamentally alter strategic outcomes.}
+\label{fig:coalition_robustness}
+\end{figure}
+
+The results, summarized in Figure~\ref{fig:coalition_robustness}, reveal a stark lack of robustness. None of the 100 sampled structures preserved the exact set of selfish equilibria. Furthermore, we observe no instances of partial preservation; the introduction of coalitions and preferences appears to trigger a phase transition that completely reshapes the equilibrium landscape. The only structures that typically preserve stability are the trivial singleton case or the grand coalition (under specific conditions), whereas intermediate structures consistently destabilize the selfish outcomes. This underscores the fragility of non-cooperative predictions in environments where subgroups can form and act on social preferences.
+
+\subsection{Summary of Findings}
+
+Collectively, our computational experiments highlight four critical insights. First, the impact of social preferences is strictly mediated by coalition structure; preferences alone are insufficient to alter stability without the coordination mechanism of coalitions. Second, out-group spite exerts a stronger destabilizing force than in-group altruism. Third, while logit dynamics theoretically ensure stability in the limit, learning noise poses a tangible threat to coordination in finite time. Finally, the selfish equilibrium set is structurally fragile, breaking down under almost any non-trivial coalition partition. These findings suggest that robust network design must explicitly account for the interplay between coalition formation and social incentives, rather than relying on selfish baselines.
+
+\section{Discussion}
+
+\section{Conclusion}
+
+
+\newpage
+\printbibliography
+\end{document}
