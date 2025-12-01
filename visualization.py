@@ -88,8 +88,8 @@ class ExperimentVisualizer:
             arch = r['archetype']
             matrices[arch][i, j] = 1 if r['is_stable'] else 0
         
-        # Create three-panel figure
-        fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+        # Create three-panel figure with space for colorbar at bottom
+        fig, axes = plt.subplots(1, 3, figsize=(18, 7))
         
         titles = {
             'grand': 'Grand Coalition',
@@ -97,25 +97,32 @@ class ExperimentVisualizer:
             'factions': 'Two-Faction Split'
         }
         
+        # Determine tick step for readable axis labels
+        tick_step = max(1, len(rho_values) // 5)
+        
         for ax, arch in zip(axes, archetypes):
             im = ax.imshow(matrices[arch], cmap='RdYlGn', aspect='auto', origin='lower',
                           vmin=0, vmax=1)
             
-            ax.set_xticks(range(0, len(rho_values), max(1, len(rho_values)//5)))
-            ax.set_yticks(range(0, len(sigma_values), max(1, len(sigma_values)//5)))
-            ax.set_xticklabels([f'{rho_values[i]:.1f}' for i in range(0, len(rho_values), max(1, len(rho_values)//5))])
-            ax.set_yticklabels([f'{sigma_values[i]:.1f}' for i in range(0, len(sigma_values), max(1, len(sigma_values)//5))])
+            ax.set_xticks(range(0, len(rho_values), tick_step))
+            ax.set_yticks(range(0, len(sigma_values), tick_step))
+            # Use .4f format to show full precision for small values like 0.001
+            ax.set_xticklabels([f'{rho_values[i]:.4f}' for i in range(0, len(rho_values), tick_step)], rotation=45, ha='right')
+            ax.set_yticklabels([f'{sigma_values[i]:.4f}' for i in range(0, len(sigma_values), tick_step)])
             
             ax.set_xlabel('ρ (Altruism)', fontsize=13)
             ax.set_ylabel('σ (Spite)', fontsize=13)
             ax.set_title(titles[arch], fontsize=14, weight='bold')
         
-        # Add colorbar
-        cbar = fig.colorbar(im, ax=axes, orientation='horizontal', pad=0.1, aspect=40)
-        cbar.set_label('Stable (Green) / Unstable (Red)', fontsize=12)
+        fig.suptitle('Archetype Stability Phase Diagrams', fontsize=16, weight='bold', y=0.98)
         
-        fig.suptitle('Archetype Stability Phase Diagrams', fontsize=16, weight='bold')
-        plt.tight_layout()
+        # Add colorbar below the plots (not overlapping)
+        fig.subplots_adjust(bottom=0.2)
+        cbar_ax = fig.add_axes([0.15, 0.08, 0.7, 0.03])  # [left, bottom, width, height]
+        cbar = fig.colorbar(im, cax=cbar_ax, orientation='horizontal')
+        cbar.set_label('Stable (Green) / Unstable (Red)', fontsize=12)
+        cbar.set_ticks([0, 1])
+        cbar.set_ticklabels(['Unstable', 'Stable'])
         
         output_path = self.output_dir / 'archetype_stability_phases.png'
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
@@ -148,44 +155,43 @@ class ExperimentVisualizer:
         sigma_values = [r['sigma'] for r in results]
         split_incentives = [r['split_incentive'] for r in results]
         is_stable = [r['is_split_stable'] for r in results]
-        social_costs = [r['social_cost_grand'] for r in results]
         
-        # Create figure with two subplots
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
+        # Create single figure (removed the second subplot about efficiency)
+        fig, ax = plt.subplots(figsize=(10, 6))
         
-        # Plot 1: Split incentive
+        # Plot split incentive vs sigma
         colors = ['green' if stable else 'red' for stable in is_stable]
-        ax1.plot(sigma_values, split_incentives, 'o-', linewidth=2, markersize=6)
-        ax1.scatter(sigma_values, split_incentives, c=colors, s=100, alpha=0.7, edgecolors='black')
+        ax.plot(sigma_values, split_incentives, 'o-', linewidth=2, markersize=8, color='steelblue')
+        ax.scatter(sigma_values, split_incentives, c=colors, s=120, alpha=0.8, edgecolors='black', zorder=5)
         
-        # Mark transition point
+        # Mark transition point if exists
+        has_transition = False
         for i in range(1, len(is_stable)):
             if is_stable[i-1] and not is_stable[i]:
-                ax1.axvline(x=sigma_values[i], color='orange', linestyle='--', linewidth=2, 
-                           label=f'Instability Threshold (σ≈{sigma_values[i]:.2f})')
+                ax.axvline(x=sigma_values[i], color='orange', linestyle='--', linewidth=2, 
+                           label=f'Instability Threshold (σ≈{sigma_values[i]:.4f})')
+                has_transition = True
                 break
         
-        ax1.axhline(y=0, color='black', linestyle='-', linewidth=1, alpha=0.3)
-        ax1.set_xlabel('σ (Out-Group Spite)', fontsize=14)
-        ax1.set_ylabel('Split Incentive ΔV', fontsize=14)
-        ax1.set_title('Mechanism of Grand Coalition Collapse', fontsize=16, weight='bold')
-        ax1.legend(fontsize=11)
-        ax1.grid(True, alpha=0.3)
+        ax.axhline(y=0, color='black', linestyle='-', linewidth=1, alpha=0.3)
+        ax.set_xlabel('σ (Out-Group Spite)', fontsize=14)
+        ax.set_ylabel('Split Incentive ΔV', fontsize=14)
+        ax.set_title('Mechanism of Grand Coalition Collapse:\nSplit Incentive Increases with Spite', fontsize=16, weight='bold')
+        if has_transition:
+            ax.legend(fontsize=11, loc='upper left')
+        ax.grid(True, alpha=0.3)
+        
+        # Format x-axis to show full precision
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{x:.4f}'))
+        plt.xticks(rotation=45, ha='right')
         
         # Add annotations
-        ax1.text(0.02, 0.98, 'Stable Zone\n(ΔV ≤ 0)', transform=ax1.transAxes,
+        ax.text(0.02, 0.98, 'Stable Zone\n(ΔV ≤ 0)', transform=ax.transAxes,
                 fontsize=11, color='green', weight='bold', va='top',
                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
-        ax1.text(0.98, 0.02, 'Unstable Zone\n(ΔV > 0)', transform=ax1.transAxes,
+        ax.text(0.98, 0.15, 'Unstable Zone\n(ΔV > 0)', transform=ax.transAxes,
                 fontsize=11, color='red', weight='bold', ha='right',
                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
-        
-        # Plot 2: Social cost (demonstrates it's not about efficiency)
-        ax2.plot(sigma_values, social_costs, 's-', linewidth=2, markersize=6, color='purple')
-        ax2.set_xlabel('σ (Out-Group Spite)', fontsize=14)
-        ax2.set_ylabel('Social Cost (Grand Coalition)', fontsize=14)
-        ax2.set_title('Splitting is NOT About Efficiency Loss', fontsize=16, weight='bold')
-        ax2.grid(True, alpha=0.3)
         
         plt.tight_layout()
         output_path = self.output_dir / 'splitting_mechanism.png'
@@ -233,21 +239,24 @@ class ExperimentVisualizer:
         # Create figure with two subplots
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
         
+        # Determine tick step
+        tick_step = max(1, len(rho_values) // 5)
+        
         # Plot 1: Cost ratio heatmap
         im1 = ax1.imshow(cost_ratio_matrix, cmap='RdYlGn_r', aspect='auto', origin='lower',
-                        vmin=0.5, vmax=2.0)
+                        vmin=0.9, vmax=1.1)
         
-        ax1.set_xticks(range(0, len(rho_values), max(1, len(rho_values)//5)))
-        ax1.set_yticks(range(0, len(sigma_values), max(1, len(sigma_values)//5)))
-        ax1.set_xticklabels([f'{rho_values[i]:.1f}' for i in range(0, len(rho_values), max(1, len(rho_values)//5))])
-        ax1.set_yticklabels([f'{sigma_values[i]:.1f}' for i in range(0, len(sigma_values), max(1, len(sigma_values)//5))])
+        ax1.set_xticks(range(0, len(rho_values), tick_step))
+        ax1.set_yticks(range(0, len(sigma_values), tick_step))
+        ax1.set_xticklabels([f'{rho_values[i]:.4f}' for i in range(0, len(rho_values), tick_step)], rotation=45, ha='right')
+        ax1.set_yticklabels([f'{sigma_values[i]:.4f}' for i in range(0, len(sigma_values), tick_step)])
         
         ax1.set_xlabel('ρ (Altruism)', fontsize=14)
         ax1.set_ylabel('σ (Spite)', fontsize=14)
-        ax1.set_title('Cost Ratio: Stable Structure / Selfish Baseline', fontsize=16, weight='bold')
+        ax1.set_title('Cost Ratio: Stable Structure / Selfish Baseline', fontsize=14, weight='bold')
         
         cbar1 = plt.colorbar(im1, ax=ax1)
-        cbar1.set_label('Cost Ratio (<1: Better, >1: Worse)', fontsize=12)
+        cbar1.set_label('Cost Ratio (<1: Better, >1: Worse)', fontsize=11)
         
         # Add 1.0 contour line
         contour = ax1.contour(cost_ratio_matrix, levels=[1.0], colors='black', 
@@ -259,14 +268,14 @@ class ExperimentVisualizer:
         im2 = ax2.imshow(archetype_matrix, cmap=cmap_arch, aspect='auto', origin='lower',
                         vmin=-0.5, vmax=2.5)
         
-        ax2.set_xticks(range(0, len(rho_values), max(1, len(rho_values)//5)))
-        ax2.set_yticks(range(0, len(sigma_values), max(1, len(sigma_values)//5)))
-        ax2.set_xticklabels([f'{rho_values[i]:.1f}' for i in range(0, len(rho_values), max(1, len(rho_values)//5))])
-        ax2.set_yticklabels([f'{sigma_values[i]:.1f}' for i in range(0, len(sigma_values), max(1, len(sigma_values)//5))])
+        ax2.set_xticks(range(0, len(rho_values), tick_step))
+        ax2.set_yticks(range(0, len(sigma_values), tick_step))
+        ax2.set_xticklabels([f'{rho_values[i]:.4f}' for i in range(0, len(rho_values), tick_step)], rotation=45, ha='right')
+        ax2.set_yticklabels([f'{sigma_values[i]:.4f}' for i in range(0, len(sigma_values), tick_step)])
         
         ax2.set_xlabel('ρ (Altruism)', fontsize=14)
         ax2.set_ylabel('σ (Spite)', fontsize=14)
-        ax2.set_title('Most Stable Archetype', fontsize=16, weight='bold')
+        ax2.set_title('Most Stable Archetype', fontsize=14, weight='bold')
         
         # Custom legend
         from matplotlib.patches import Patch
