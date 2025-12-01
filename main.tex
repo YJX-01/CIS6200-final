@@ -151,12 +151,12 @@ Under purely selfish behavior, maximizing $\mu_i$ yields the standard congestion
 \subsection{Altruism and Spite}
 \label{subsec:altruism-spite}
 
-nPlayers may also care about the performance of others, particularly those inside or outside their coalition. We model this using a linear social-preference operator. A coalition structure (defined formally in Section~\ref{subsec:coalition-structure}) partitions $N$ into disjoint coalitions. Let $P$ denote such a partition, and let $C_i(P)$ denote the coalition containing $i$.
+Players may also care about the performance of others, particularly those inside or outside their coalition. We model this using a normalized social-preference operator that averages the payoffs of group members. A coalition structure (defined formally in Section~\ref{subsec:coalition-structure}) partitions $N$ into disjoint coalitions. Let $P$ denote such a partition, and let $C_i(P)$ denote the coalition containing $i$.
 
 Given a strategy profile $s$ and coalition structure $P$, the utility of player $i$ has three components:
 (i) own payoff $\mu_i(s)$;  
-(ii) a weight $\rho$ assigned to the payoffs of in–group members $C_i(P)\setminus \{i\}$;  
-(iii) a weight $-\sigma$ assigned to the payoffs of out–group members $N\setminus C_i(P)$.
+(ii) a weight $\rho$ assigned to the \emph{average} payoff of in-group members $C_i(P)\setminus \{i\}$;  
+(iii) a weight $-\sigma$ assigned to the \emph{average} payoff of out-group members $N\setminus C_i(P)$.
 
 Formally,
 \begin{equation}
@@ -164,41 +164,38 @@ Formally,
     \;=\;
     \mu_i(s)
     \;+\;
-    \rho
-    \sum_{j \in C_i(P)\setminus\{i\}} \mu_j(s)
+    \rho \cdot \bar{\mu}_{\mathrm{in}}(i)
     \;-\;
-    \sigma
-    \sum_{m \notin C_i(P)} \mu_m(s).
+    \sigma \cdot \bar{\mu}_{\mathrm{out}}(i),
     \label{eq:Ui}
 \end{equation}
-
-The parameters $\rho,\sigma\in\mathbb{R}$ are fixed and shared by all players.  
-The interpretation is standard: $\rho>0$ represents in–group altruism, 
-$\sigma>0$ represents out–group spite, and $\rho=\sigma=0$ yields the classical selfish model.
-
-\medskip
-\paragraph{Matrix representation.}
-The utility~\eqref{eq:Ui} can be written in the linear form
+where the average payoffs are defined as:
 \[
-U_i(s;P)=\sum_{j=1}^n \gamma_{ij}(P)\,\mu_j(s),
-\]
-where the social-preference matrix $\Gamma(P)=(\gamma_{ij}(P))$ is defined by
-\[
-\gamma_{ij}(P)
-=
+\bar{\mu}_{\mathrm{in}}(i) =
 \begin{cases}
-1, & j=i,\\[2pt]
-\rho, & j\neq i,\; j\in C_i(P),\\[2pt]
--\sigma, & j\notin C_i(P).
+\dfrac{1}{|C_i|-1} \displaystyle\sum_{j \in C_i \setminus \{i\}} \mu_j(s), & |C_i| > 1 \\[12pt]
+0, & |C_i| = 1
 \end{cases}
 \]
-By construction:  
-(i) $\gamma_{ii}(P)=1$ for all $i$;  
-(ii) whenever players $i$ and $j$ belong to the same coalition, 
-$\gamma_{ij}(P)=\gamma_{ji}(P)=\rho$;  
-(iii) whenever $i$ and $j$ belong to different coalitions, 
-$\gamma_{ij}(P)=\gamma_{ji}(P)=-\sigma$.
-Thus the matrix $\Gamma(P)$ always has unit diagonal and symmetric off-diagonal entries.
+\[
+\bar{\mu}_{\mathrm{out}}(i) =
+\begin{cases}
+\dfrac{1}{n - |C_i|} \displaystyle\sum_{m \notin C_i} \mu_m(s), & |C_i| < n \\[12pt]
+0, & |C_i| = n
+\end{cases}
+\]
+
+The parameters $\rho,\sigma\in\mathbb{R}$ are fixed and shared by all players.  
+The interpretation is: $\rho>0$ represents in-group altruism, 
+$\sigma>0$ represents out-group spite, and $\rho=\sigma=0$ yields the classical selfish model.
+
+\medskip
+\paragraph{Normalization rationale.}
+This normalized formulation ensures that the social preference terms are scale-invariant with respect to coalition size. Under the previous sum-based formulation, utility would scale with coalition cardinality, causing large coalitions to experience disproportionately strong social effects. By averaging, we ensure that $\rho$ and $\sigma$ have consistent interpretations across different coalition structures: they represent the marginal rate of substitution between own payoff and the \emph{typical} ally's (or rival's) payoff, independent of group size.
+
+\medskip
+\paragraph{Boundary cases.}
+When player $i$ is a singleton ($|C_i|=1$), there are no in-group members, so $\bar{\mu}_{\mathrm{in}}(i)=0$. When player $i$ belongs to the grand coalition ($|C_i|=n$), there are no out-group members, so $\bar{\mu}_{\mathrm{out}}(i)=0$. These boundary conditions ensure well-defined utilities at the extremes of coalition structure.
 
 \subsection{Potential Function of the Underlying Congestion Game}
 \label{subsec:potential-function}
@@ -791,69 +788,99 @@ these patterns visible, comparable, and analytically tractable.
 
 \section{Computational Experiments}
 
-To validate the theoretical predictions established in Section 3 and to explore the empirical behavior of coalitional congestion games under social preferences, we conduct a series of numerical simulations. Our analysis focuses on four key aspects: (i) the sensitivity of Nash equilibria to social-preference parameters across different coalition structures, (ii) the empirical validity of the potential-compatibility condition, (iii) the convergence properties of logit learning dynamics, and (iv) the robustness of selfish equilibria against arbitrary coalition formations.
+To validate the theoretical predictions established in Section 3 and to explore the empirical behavior of coalitional congestion games under normalized social preferences, we conduct a series of numerical simulations. Our analysis focuses on four key aspects: (i) stability phase diagrams for archetype coalition structures, (ii) the mechanism by which spite incentivizes coalition splitting, (iii) efficiency analysis through the price of stability, and (iv) the fragility of generic coalition structures.
 
 \subsection{Experimental Setup}
 
-We consider atomic congestion games with $n=6$ players and $m=3$ resources. Each resource $k$ is assigned a linear latency function $f_k(n) = a_k n + b_k$, where coefficients $a_k$ and $b_k$ are drawn uniformly from the intervals $[1,10]$ and $[0,5]$, respectively. This configuration balances computational tractability with sufficient complexity to capture non-trivial strategic interactions.
+We consider atomic congestion games with $n=6$ players and $m=3$ resources. Each resource $k$ is assigned a heterogeneous linear latency function designed to reveal distinct regime behaviors:
+\[
+f_1(n) = 1.0n + 0, \quad f_2(n) = 0.5n + 2, \quad f_3(n) = 1.5n + 1.
+\]
+This configuration represents a ``tight'' resource (high congestion sensitivity), a ``forgiving'' resource (low sensitivity but high base cost), and an intermediate resource. The potential-compatibility bound from Proposition~\ref{prop:pc-bound} evaluates to approximately $\rho + \sigma \leq 0.0019$ for this setting.
 
-Social preferences are parameterized by in-group altruism $\alpha \in [0,1]$ and out-group spite $\sigma \in [0,1]$. We investigate multiple coalition structures, including singleton coalitions (the non-cooperative baseline), half-split coalitions (two equal-sized groups), and paired coalitions (three groups of two). For the learning dynamics, we employ a logit response protocol governed by a temperature parameter $\tau$, where lower values indicate higher rationality. All Nash equilibria are computed via exhaustive enumeration for smaller instances and best-response dynamics for larger state spaces. As a benchmark, the baseline selfish game ($\alpha=0, \sigma=0$) in our setup yields 60 pure-strategy Nash equilibria, all sharing identical Rosenthal potential values.
+Social preferences are parameterized by in-group altruism $\rho \in [0, 0.01]$ and out-group spite $\sigma \in [0, 0.01]$. We test three archetype coalition structures that represent canonical endpoints of the coalition formation spectrum:
+\begin{itemize}
+    \item \textbf{Grand Coalition}: $P^{\mathrm{grand}} = \{N\}$ (full cooperation)
+    \item \textbf{Singleton}: $P^{\mathrm{sing}} = \{\{1\}, \{2\}, \ldots, \{6\}\}$ (complete atomization)
+    \item \textbf{Factions}: $P^{\mathrm{fac}} = \{\{1,2,3\}, \{4,5,6\}\}$ (two opposing blocs)
+\end{itemize}
+Nash equilibria are computed via best-response dynamics with convergence tolerance $\epsilon = 10^{-9}$. Coalition stability is assessed by exhaustively checking all possible split and join deviations.
 
-\subsection{Equilibrium Structure Under Social Preferences}
+\subsection{Archetype Stability Phase Diagrams}
 
-We first examine whether social preferences alter the equilibrium set of the selfish congestion game across distinct coalition structures. We compute Nash equilibria for varying combinations of $\alpha$ and $\sigma$ (ranging from 0 to 1.0) under three specific structures: singletons, half-splits ($C_1=\{0,1,2\}, C_2=\{3,4,5\}$), and pairs ($C_1=\{0,1\}, C_2=\{2,3\}, C_3=\{4,5\}$).
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.9\textwidth]{equilibria_comparison.png}
-\caption{Nash equilibria counts across social-preference parameters $(\alpha, \sigma)$ for three coalition structures: singleton (left), half-split (center), and paired (right). Colors indicate the number of equilibria. While singleton games remain unaffected, coarser partitions (half-split and pairs) show significant sensitivity to out-group spite.}
-\label{fig:equilibria_comparison}
-\end{figure}
-
-Figure~\ref{fig:equilibria_comparison} presents the equilibrium counts for each $(\alpha,\sigma)$ pair. For singleton coalitions, the equilibrium count remains constant at 60 across all parameter combinations, confirming that social preferences do not alter equilibrium existence or multiplicity when players act independently. However, once coordination is introduced, the landscape changes significantly. In the half-split configuration, equilibrium counts vary between 24 and 60. Notably, higher levels of spite ($\sigma > 0.5$) consistently reduce the number of equilibria, suggesting that out-group hostility destabilizes certain strategic profiles. The paired coalition structure exhibits the highest sensitivity, with equilibrium counts dropping to 24 when $\sigma > 0$. These results indicate that coalition structure acts as a critical mediator: while altruism ($\alpha$) tends to preserve equilibria, out-group spite ($\sigma$) disrupts stability, particularly when coordination allows these preferences to be effectively exercised.
-
-\subsection{Potential-Compatibility Analysis}
-
-Next, we empirically test the potential-compatibility condition defined in Section 3.2, which ensures that coalition-improving deviations align with decreases in Rosenthal's potential. We sample a $6 \times 6$ grid over the parameter space $(\alpha, \sigma) \in [0,1]^2$. For each parameter pair, we generate 2000 random deviations from random initial profiles under a grand coalition structure and calculate the "compatibility score"—defined as the proportion of coalition-improving moves ($\Delta U_C > 0$) that weakly decrease the potential ($\Delta \Phi^0 \le 0$).
+We first examine which archetype structures can ``survive'' (remain stable) across the $(\rho, \sigma)$ parameter space. For each of 121 parameter points on an $11 \times 11$ grid, we compute the coalitional Nash equilibrium and then test for structural stability against both split and join deviations.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.5\textwidth]{potential_compatibility.png}
-\caption{Heatmap of potential-compatibility scores over the $(\alpha, \sigma)$ parameter space. Each cell represents the proportion of coalition-improving deviations that align with the potential function, based on 2000 random samples. The degradation of compatibility away from the origin highlights the tension between social preferences and potential-based stability.}
-\label{fig:potential_compatibility}
+\includegraphics[width=0.95\textwidth]{figures/archetype_stability_phases.png}
+\caption{Stability phase diagrams for three archetype coalition structures across the $(\rho, \sigma)$ parameter space. Green indicates stable configurations; red indicates unstable. The singleton structure dominates with 91.7\% stability, while grand coalition and factions achieve only 0.8\% stability each.}
+\label{fig:archetype_phases}
 \end{figure}
 
-As shown in Figure~\ref{fig:potential_compatibility}, perfect compatibility (a score of 1.0) is rarely achieved in the sampled space. Scores typically range from 0.4 to 0.8, exhibiting a clear gradient: compatibility is highest near the selfish baseline $(\alpha=0, \sigma=0)$ and degrades monotonically as either parameter increases. This finding suggests that while theoretical compatibility conditions exist, they are restrictive. In practice, strong social preferences—whether derived from altruism or spite—frequently create incentives that conflict with the global optimization inherent in Rosenthal's potential function.
+Figure~\ref{fig:archetype_phases} presents striking asymmetry in stability outcomes. The singleton structure achieves 91.7\% stability across the parameter space, confirming our theoretical prediction that atomized players face no internal coordination pressures and are protected against join deviations when spite is present. In contrast, both the grand coalition and factional structures achieve only 0.8\% stability---stable only at the origin $(\rho, \sigma) = (0, 0)$ where the game reduces to the classical selfish case.
 
-\subsection{Learning Dynamics and Convergence}
+This result has important implications: \emph{even infinitesimal amounts of spite are sufficient to destabilize cooperative structures}. The normalized utility formulation amplifies this effect because spite operates on average out-group payoffs, making it profitable for subgroups to split off and ``weaponize'' congestion against former allies.
 
-We further investigate the convergence properties of logit learning dynamics. Using a paired coalition structure with mild social preferences ($\alpha = 0.1, \sigma = 0.1$), we simulate the system evolution under varying temperature parameters $\tau$, ranging from near-perfect rationality ($\tau = 0.01$) to high noise ($\tau = 1.0$).
+\subsection{Mechanism of Coalition Splitting}
+
+We next investigate the precise mechanism by which spite induces grand coalition collapse. Fixing $\rho = 0.0005$ (mild altruism), we sweep $\sigma$ from 0 to 0.01 and measure the \emph{split incentive}---the utility gain from the most profitable binary split of the grand coalition.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.9\textwidth]{learning_convergence.png}
-\caption{Convergence of logit learning dynamics. The left panel plots the aggregate probability mass on Nash equilibria against temperature $\tau$. The right panel shows the number of stochastically stable equilibria. The results confirm asymptotic stability while highlighting the disruptive effect of noise in finite-temperature regimes.}
-\label{fig:learning_convergence}
+\includegraphics[width=0.85\textwidth]{figures/splitting_mechanism.png}
+\caption{Mechanism of grand coalition collapse. Top panel: Split incentive $\Delta V$ increases monotonically with $\sigma$. Bottom panel: Social cost remains constant at 17.0, demonstrating that splitting is motivated by strategic spite, not efficiency concerns.}
+\label{fig:splitting_mechanism}
 \end{figure}
 
-Figure~\ref{fig:learning_convergence} illustrates the probability mass allocated to Nash equilibria in the stationary distribution. At low noise levels ($\tau = 0.01$), the system concentrates 100\% of its mass on the identified Nash equilibria, validating the stochastic stability predictions. However, as $\tau$ increases, convergence quality degrades approximately linearly. At $\tau = 0.5$, only 86.1\% of the time is spent in equilibrium states, dropping to 75.1\% at $\tau = 1.0$. This demonstrates that while the theoretical limit $\tau \to 0$ guarantees stability, moderate learning noise in practical settings can lead to significant deviations from equilibrium behavior.
+Figure~\ref{fig:splitting_mechanism} reveals that the split incentive grows linearly with $\sigma$, from approximately 0.002 at $\sigma = 0$ to 0.204 at $\sigma = 0.01$. Crucially, the social cost remains constant at 17.0 throughout this range. This demonstrates a key insight: \emph{coalition splitting is not driven by efficiency gains, but by the strategic value of creating out-groups to harm}.
 
-\subsection{Robustness to Coalition Formation}
+Under the normalized spite term $\sigma \cdot \bar{\mu}_{\mathrm{out}}$, splitting the grand coalition creates a non-empty out-group, enabling players to derive positive utility from their rivals' suffering. This ``weaponization'' of congestion represents a novel form of strategic behavior that emerges only when social preferences interact with coalition structure.
 
-Finally, we analyze the robustness of selfish Nash equilibria against arbitrary coalition formation. We randomly sample 100 coalition structures from the set of all possible partitions (Bell number $B(6) = 203$) and compute their equilibria under parameters $\alpha = 0.1, \sigma = 0.1$. We classify the results based on whether the new equilibrium set matches the original selfish equilibria.
+\subsection{Price of Stability}
+
+We assess the efficiency implications of stable coalition structures by computing the \emph{price of stability}---the ratio of social cost at the stable structure's equilibrium to the selfish baseline cost.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.9\textwidth]{coalition_robustness.png}
-\caption{Robustness analysis across 100 random coalition structures with $\alpha = 0.1, \sigma = 0.1$. The complete absence of structures that preserve the selfish equilibrium set (green) illustrates that even mild social preferences combined with subgroup coordination fundamentally alter strategic outcomes.}
-\label{fig:coalition_robustness}
+\includegraphics[width=0.95\textwidth]{figures/price_of_stability.png}
+\caption{Price of stability analysis. Left: Cost ratio heatmap showing that stable structures (predominantly singletons) achieve costs within 3\% of the selfish baseline. Right: The singleton structure dominates across nearly all parameter combinations.}
+\label{fig:price_of_stability}
 \end{figure}
 
-The results, summarized in Figure~\ref{fig:coalition_robustness}, reveal a stark lack of robustness. None of the 100 sampled structures preserved the exact set of selfish equilibria. Furthermore, we observe no instances of partial preservation; the introduction of coalitions and preferences appears to trigger a phase transition that completely reshapes the equilibrium landscape. The only structures that typically preserve stability are the trivial singleton case or the grand coalition (under specific conditions), whereas intermediate structures consistently destabilize the selfish outcomes. This underscores the fragility of non-cooperative predictions in environments where subgroups can form and act on social preferences.
+Figure~\ref{fig:price_of_stability} shows that the average cost ratio in the nearly-selfish regime is 0.981, indicating a modest 1.9\% efficiency improvement over the selfish baseline. However, this improvement is almost entirely attributable to the grand coalition at the origin. Across the broader parameter space, the singleton structure---which dominates stability---achieves social cost of 17.5 versus the baseline of 17.5, yielding a cost ratio of exactly 1.0.
+
+This finding suggests that \emph{structural stability and efficiency are largely orthogonal under normalized social preferences}. The most stable structure (singleton) preserves selfish efficiency, while potentially more efficient structures (grand coalition) are highly unstable.
+
+\subsection{Fragility of Generic Structures}
+
+Finally, we test whether stability is a property of our chosen archetypes or a more general feature of the coalition landscape. We sample 100 random asymmetric coalition structures and test their stability at moderate parameters $(\rho, \sigma) = (0.0002, 0.0002)$.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/structure_fragility.png}
+\caption{Fragility of generic coalition structures. Left: Only 3\% of random structures are stable, compared to 33\% of archetypes. Right: Failure mode breakdown shows split deviations (52.4\%) and combined split-join instability (43.7\%) dominate.}
+\label{fig:structure_fragility}
+\end{figure}
+
+Figure~\ref{fig:structure_fragility} demonstrates extreme fragility: only 3\% of random structures achieve stability, compared to 33\% for archetypes (specifically, the singleton). The failure mode breakdown reveals that 52.4\% of structures fail due to profitable splits, 43.7\% fail due to both split and join deviations, and 0\% fail due to joins alone.
+
+This asymmetry---splits dominate joins---reflects the normalized spite formulation. Splitting creates new out-group targets for spite-motivated harm, while joining dilutes both in-group altruism benefits and out-group targeting capability. The result is a strong evolutionary pressure toward atomization.
 
 \subsection{Summary of Findings}
 
-Collectively, our computational experiments highlight four critical insights. First, the impact of social preferences is strictly mediated by coalition structure; preferences alone are insufficient to alter stability without the coordination mechanism of coalitions. Second, out-group spite exerts a stronger destabilizing force than in-group altruism. Third, while logit dynamics theoretically ensure stability in the limit, learning noise poses a tangible threat to coordination in finite time. Finally, the selfish equilibrium set is structurally fragile, breaking down under almost any non-trivial coalition partition. These findings suggest that robust network design must explicitly account for the interplay between coalition formation and social incentives, rather than relying on selfish baselines.
+Our computational experiments yield four key insights:
+
+\begin{enumerate}
+    \item \textbf{Singleton dominance}: Under normalized social preferences, the singleton (fully atomized) structure is overwhelmingly stable (91.7\%), while cooperative structures are extremely fragile (0.8\%).
+    
+    \item \textbf{Spite-driven splitting}: Coalition collapse is driven by the strategic value of creating out-groups, not by efficiency considerations. The split incentive scales linearly with spite $\sigma$.
+    
+    \item \textbf{Efficiency-stability orthogonality}: Stable structures (singletons) preserve selfish efficiency, while potentially more efficient structures (grand coalition) are unstable except at the selfish baseline.
+    
+    \item \textbf{Generic fragility}: Random asymmetric structures achieve only 3\% stability, with split deviations as the dominant failure mode. This suggests that extreme structures (full cooperation or full atomization) are the only robust outcomes.
+\end{enumerate}
+
+These findings highlight the destabilizing power of even small amounts of spite in coalition formation, and suggest that mechanism design in social networks must carefully account for the interaction between group identity and strategic preferences.
 
 \section{Discussion}
 

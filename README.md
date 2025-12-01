@@ -23,7 +23,15 @@ Based on your experimental plan and the paper "Coalitional Stability in Congesti
   - Social cost calculation
   - Deep copy with new coalition structures
 
-**Key Equation**: U_i(s;P) = μ_i(s) + ρ·∑_{j∈C_i\{i}} μ_j(s) - σ·∑_{m∉C_i} μ_m(s)
+**Key Equation (Normalized Form)**:
+```
+U_i(s;P) = μ_i(s) + ρ·μ̄_in(i) - σ·μ̄_out(i)
+
+where:
+  μ̄_in(i) = (1/(|C_i|-1)) · Σ_{j∈C_i\{i}} μ_j(s)   if |C_i| > 1, else 0
+  μ̄_out(i) = (1/(n-|C_i|)) · Σ_{m∉C_i} μ_m(s)      if |C_i| < n, else 0
+```
+This normalized formulation uses **average** payoffs instead of sums, ensuring scale-invariance with respect to coalition size.
 
 **Lines of code**: 149
 
@@ -319,20 +327,31 @@ python run_experiments.py --viz              # Generate plots
 
 ### 1. Social Preferences (Section 2.2 of paper)
 
+**Normalized formulation using average payoffs:**
+
 **In-group altruism (ρ)**:
 ```python
-in_group_term = rho * sum(mu_j for j in coalition if j != i)
+if len(coalition) > 1:
+    mu_bar_in = sum(mu_j for j in coalition if j != i) / (len(coalition) - 1)
+else:
+    mu_bar_in = 0.0  # Singleton: no in-group members
 ```
 
 **Out-group spite (σ)**:
 ```python
-out_group_term = -sigma * sum(mu_m for m not in coalition)
+out_group_size = n_players - len(coalition)
+if out_group_size > 0:
+    mu_bar_out = sum(mu_m for m not in coalition) / out_group_size
+else:
+    mu_bar_out = 0.0  # Grand coalition: no out-group members
 ```
 
 **Combined utility**:
 ```python
-U_i = mu_i + in_group_term + out_group_term
+U_i = mu_i + rho * mu_bar_in - sigma * mu_bar_out
 ```
+
+This normalized form ensures that ρ and σ have consistent interpretations across different coalition sizes.
 
 ---
 
@@ -520,42 +539,31 @@ game = CongestionGame(6, resources, custom_structure, rho=0.3, sigma=0.2)
 
 ---
 
-## Expected Results (Based on Theory)
+## Experimental Results (New Normalized Utility)
 
-### Experiment 1: Equilibrium Structure
-- **Singleton structure**: ~60 equilibria, constant across (ρ,σ)
-- **Coarser structures**: Declining equilibria as σ increases
-- **No equilibria**: Very rare (potential game guarantees existence)
+### Experiment 1: Archetype Stability Phases
+- **Singleton structure**: 91.7% stable across (ρ,σ) space
+- **Grand coalition**: 0.8% stable (only at origin)
+- **Factions**: 0.8% stable (only at origin)
+- **Key insight**: Even infinitesimal spite destabilizes cooperative structures
 
-### Experiment 2: Potential-Compatibility
-- **Near origin**: Score ≈ 0.95-1.0
-- **At (0.5, 0.5)**: Score ≈ 0.6-0.8
-- **At (1.0, 1.0)**: Score ≈ 0.4-0.6
-- **Gradient**: Monotonic decrease from origin
+### Experiment 2: Splitting Mechanism
+- **Split incentive**: Increases linearly with σ
+- **At σ=0**: Split incentive ≈ 0.002
+- **At σ=0.01**: Split incentive ≈ 0.204
+- **Social cost**: Constant at 17.0 (splitting is strategic, not efficiency-driven)
 
-### Experiment 3: Learning Dynamics
-- **τ=0.01**: 100% Nash mass
-- **τ=0.1**: ~95% Nash mass
-- **τ=0.5**: ~85% Nash mass
-- **τ=1.0**: ~75% Nash mass
+### Experiment 3: Price of Stability
+- **Average cost ratio**: 0.981 in nearly-selfish regime
+- **Singleton cost**: 17.5 (matches selfish baseline)
+- **Grand coalition cost**: 17.0 (2.9% improvement, but unstable)
+- **Key insight**: Stability and efficiency are largely orthogonal
 
-### Experiment 4: Coalition Stability
-
-**Nearly selfish (ρ=0, σ=0)**:
-- All structures ~equally unstable
-- Join deviations slightly dominate
-
-**Altruistic (ρ=0.8, σ=0.1)**:
-- Grand coalition: 80%+ stable
-- Singleton: 0% stable (profitable joins everywhere)
-
-**Spiteful (ρ=0.1, σ=0.8)**:
-- Singleton: 80%+ stable
-- Grand coalition: 0% stable (profitable splits everywhere)
-
-**Factional (ρ=0.6, σ=0.6)**:
-- 2-3 coalition structures: 40-60% stable
-- Extreme structures (singleton, grand): <20% stable
+### Experiment 4: Structure Fragility
+- **Random structures**: Only 3% stable
+- **Archetypes**: 33% stable (singleton only)
+- **Failure modes**: Split (52.4%), Both (43.7%), Join (0%)
+- **Key insight**: Splits dominate; spite creates atomization pressure
 
 ---
 

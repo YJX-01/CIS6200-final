@@ -139,8 +139,15 @@ class CongestionGame:
         """
         Calculate player utility U_i(s; P) with social preferences.
         
-        Formula from Eq. (1):
-        U_i(s;P) = μ_i(s) + rho·Σ_{j∈C_i\{i}} μ_j(s) - sigma·Σ_{m∉C_i} μ_m(s)
+        New normalized formula:
+        U_i(s;P) = μ_i(s) + ρ·μ̄_in(i) - σ·μ̄_out(i)
+        
+        where:
+        - μ̄_in(i) = average payoff of coalition members (excluding i), or 0 if singleton
+        - μ̄_out(i) = average payoff of out-group members, or 0 if grand coalition
+        
+        This normalized form ensures utility is independent of coalition size,
+        making ρ and σ directly comparable across different coalition structures.
         
         Args:
             player: Player index
@@ -151,20 +158,34 @@ class CongestionGame:
         """
         mu_i = self.get_selfish_payoff(player, strategy_profile)
         
-        # In-group term
+        # In-group term: average payoff of coalition members (excluding self)
         player_coalition = self.get_player_coalition(player)
-        in_group_sum = sum(
-            self.get_selfish_payoff(j, strategy_profile)
-            for j in player_coalition if j != player
-        )
+        coalition_size = len(player_coalition)
         
-        # Out-group term
-        out_group_sum = sum(
-            self.get_selfish_payoff(m, strategy_profile)
-            for m in self.players if m not in player_coalition
-        )
+        if coalition_size > 1:
+            in_group_sum = sum(
+                self.get_selfish_payoff(j, strategy_profile)
+                for j in player_coalition if j != player
+            )
+            mu_bar_in = in_group_sum / (coalition_size - 1)
+        else:
+            # Singleton coalition: no in-group members
+            mu_bar_in = 0.0
         
-        return mu_i + self.rho * in_group_sum - self.sigma * out_group_sum
+        # Out-group term: average payoff of non-coalition members
+        out_group_size = self.n_players - coalition_size
+        
+        if out_group_size > 0:
+            out_group_sum = sum(
+                self.get_selfish_payoff(m, strategy_profile)
+                for m in self.players if m not in player_coalition
+            )
+            mu_bar_out = out_group_sum / out_group_size
+        else:
+            # Grand coalition: no out-group members
+            mu_bar_out = 0.0
+        
+        return mu_i + self.rho * mu_bar_in - self.sigma * mu_bar_out
     
     def get_coalition_utility(
         self, 
